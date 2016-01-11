@@ -18,11 +18,11 @@
 
 package org.apache.commons.exec.launcher;
 
-import org.apache.commons.exec.CommandLine;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+
+import org.apache.commons.exec.CommandLine;
 
 /**
  * A command launcher for Windows XP/2000/NT that uses 'cmd.exe' when

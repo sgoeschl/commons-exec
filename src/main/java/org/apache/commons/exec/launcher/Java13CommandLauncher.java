@@ -18,12 +18,12 @@
 
 package org.apache.commons.exec.launcher;
 
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.environment.EnvironmentUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.environment.EnvironmentUtils;
 
 /**
  * A command launcher for JDK/JRE 1.3 (and higher). Uses the built-in

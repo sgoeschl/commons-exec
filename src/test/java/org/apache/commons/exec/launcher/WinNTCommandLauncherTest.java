@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.OS;
 import org.junit.Test;
 
@@ -64,18 +65,27 @@ public class WinNTCommandLauncherTest {
     @Test
     public void testStartingBatchFileWithoutWorkingDirectory() throws Exception {
         if (OS.isFamilyWindows()) {
-            final CommandLine cmd = new CommandLine("test.bat");
+            final DefaultExecutor defaultExecutor = new DefaultExecutor();
+            final CommandLine cmd = new CommandLine("./src/test/scripts/test.bat");
+            defaultExecutor.setLauncher(new WinNTCommandLauncher(new Java13CommandLauncher()));
 
-            winNTCommandLauncher.exec(cmd, null);
+            int exitValue = defaultExecutor.execute(cmd);
+
+            assertEquals(0, exitValue);
         }
     }
 
     @Test
     public void testStartingBatchFileWithWorkingDirectory() throws Exception {
         if (OS.isFamilyWindows()) {
+            final DefaultExecutor defaultExecutor = new DefaultExecutor();
             final CommandLine cmd = new CommandLine("test.bat");
+            defaultExecutor.setWorkingDirectory(new File("./src/test/scripts"));
+            defaultExecutor.setLauncher(new WinNTCommandLauncher(new Java13CommandLauncher()));
 
-            winNTCommandLauncher.exec(cmd, null, new File("."));
+            int exitValue = defaultExecutor.execute(cmd);
+
+            assertEquals(0, exitValue);
         }
     }
 

@@ -16,12 +16,12 @@
  */
 package org.apache.commons.exec;
 
-import org.apache.commons.exec.launcher.CommandLauncher;
-import org.apache.commons.exec.launcher.CommandLauncherFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+
+import org.apache.commons.exec.launcher.CommandLauncher;
+import org.apache.commons.exec.launcher.CommandLauncherFactory;
 
 /**
  * The default class to start a subprocess. The implementation
@@ -60,7 +60,7 @@ public class DefaultExecutor implements Executor {
     private int[] exitValues;
 
     /** launches the command in a new process */
-    private final CommandLauncher launcher;
+    private CommandLauncher launcher;
 
     /** optional cleanup of started processes */ 
     private ProcessDestroyer processDestroyer;
@@ -143,6 +143,14 @@ public class DefaultExecutor implements Executor {
      */
     public void setWorkingDirectory(final File dir) {
         this.workingDirectory = dir;
+    }
+
+    public CommandLauncher getLauncher() {
+        return launcher;
+    }
+
+    public void setLauncher(CommandLauncher launcher) {
+        this.launcher = launcher;
     }
 
     /**

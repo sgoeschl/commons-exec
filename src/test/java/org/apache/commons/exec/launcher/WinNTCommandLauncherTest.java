@@ -22,7 +22,9 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.OS;
 import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 
 public class WinNTCommandLauncherTest {
@@ -57,6 +59,24 @@ public class WinNTCommandLauncherTest {
         assertEquals(ANY_WORKING_DIR.getAbsolutePath(), commandLauncher.cmd.getArguments()[3]);
         assertEquals("&&", commandLauncher.cmd.getArguments()[4]);
         assertEquals(ANY_EXECUTABLE_NAME, commandLauncher.cmd.getArguments()[5]);
+    }
+
+    @Test
+    public void testStartingBatchFileWithoutWorkingDirectory() throws Exception {
+        if (OS.isFamilyWindows()) {
+            final CommandLine cmd = new CommandLine("test.bat");
+
+            winNTCommandLauncher.exec(cmd, null);
+        }
+    }
+
+    @Test
+    public void testStartingBatchFileWithWorkingDirectory() throws Exception {
+        if (OS.isFamilyWindows()) {
+            final CommandLine cmd = new CommandLine("test.bat");
+
+            winNTCommandLauncher.exec(cmd, null, new File("."));
+        }
     }
 
     private static final class CommandLauncherStub implements CommandLauncher {

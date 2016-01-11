@@ -18,19 +18,21 @@
 
 package org.apache.commons.exec.launcher;
 
+import org.apache.commons.exec.CommandLine;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-import org.apache.commons.exec.CommandLine;
-
 /**
- * A command launcher for Windows XP/2000/NT that uses 'cmd.exe' when launching
- * commands in directories other than the current working directory.
+ * A command launcher for Windows XP/2000/NT that uses 'cmd.exe' when
+ * launching commands in directories other than the current working
+ * directory.
  *
  * @version $Id$
  */
 public class WinNTCommandLauncher extends CommandLauncherProxy {
+
     public WinNTCommandLauncher(final CommandLauncher launcher) {
         super(launcher);
     }
@@ -38,29 +40,37 @@ public class WinNTCommandLauncher extends CommandLauncherProxy {
     /**
      * Launches the given command in a new process, in the given working
      * directory.
-     * 
-     * @param cmd
-     *            the command line to execute as an array of strings
-     * @param env
-     *            the environment to set as an array of strings
-     * @param workingDir
-     *            working directory where the command should run
-     * @throws IOException
-     *             forwarded from the exec method of the command launcher
+     *
+     * @param cmd the command line to execute as an array of strings
+     * @param env the environment to set as an array of strings
+     * @param workingDir working directory where the command should run
+     * @return the created Process
+     * @throws IOException forwarded from the exec method of the command launcher
      */
     @Override
     public Process exec(final CommandLine cmd, final Map<String, String> env,
-            final File workingDir) throws IOException {
+                        final File workingDir) throws IOException {
+
         if (workingDir == null) {
             return exec(cmd, env);
         }
 
+        final String[] cmdArray = cmd.toStrings();
+
         // Use cmd.exe to change to the specified directory before running
         // the command
-        final CommandLine newCmd = new CommandLine("cmd");
-        newCmd.addArgument("/c");
-        newCmd.addArguments(cmd.toStrings());
+        final int preCmdLength = 5;
+        String[] newCmdArray = new String[cmdArray.length + preCmdLength];
+        newCmdArray[0] = "/c";
+        newCmdArray[1] = "cd";
+        newCmdArray[2] = "/d";
+        newCmdArray[3] = workingDir.getAbsolutePath();
+        newCmdArray[4] = "&&";
+        System.arraycopy(cmdArray, 0, newCmdArray, preCmdLength, cmdArray.length);
 
+        CommandLine newCmd = new CommandLine("cmd");
+        newCmd.setSubstitutionMap(cmd.getSubstitutionMap());
+        newCmd.addArguments(newCmdArray);
         return exec(newCmd, env);
     }
 }

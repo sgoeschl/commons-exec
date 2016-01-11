@@ -19,13 +19,29 @@
 package org.apache.commons.exec;
 
 import org.apache.commons.exec.environment.EnvironmentUtils;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @version $Id$
@@ -46,10 +62,10 @@ public class DefaultExecutorTest {
     private final File nonExistingTestScript = TestUtil.resolveScriptForOS(testDir + "/grmpffffff");
     private final File redirectScript = TestUtil.resolveScriptForOS(testDir + "/redirect");
     private final File printArgsScript = TestUtil.resolveScriptForOS(testDir + "/printargs");
-//    private final File acroRd32Script = TestUtil.resolveScriptForOS(testDir + "/acrord32");
+    //    private final File acroRd32Script = TestUtil.resolveScriptForOS(testDir + "/acrord32");
     private final File stdinSript = TestUtil.resolveScriptForOS(testDir + "/stdin");
     private final File environmentSript = TestUtil.resolveScriptForOS(testDir + "/environment");
-//    private final File wrapperScript = TestUtil.resolveScriptForOS(testDir + "/wrapper");
+    //    private final File wrapperScript = TestUtil.resolveScriptForOS(testDir + "/wrapper");
 
 
     // Get suitable exit codes for the OS
@@ -100,9 +116,11 @@ public class DefaultExecutorTest {
      * @throws Exception the test failed
      */
     @Test
-    public void testExecute() throws Exception {
+    public void testExecuteWithoutWorkingDirectory() throws Exception {
         final CommandLine cl = new CommandLine(testScript);
+
         final int exitValue = exec.execute(cl);
+
         assertEquals("FOO..", baos.toString().trim());
         assertFalse(exec.isFailure(exitValue));
         assertEquals(new File("."), exec.getWorkingDirectory());
@@ -113,7 +131,37 @@ public class DefaultExecutorTest {
         final File workingDir = new File("./target");
         final CommandLine cl = new CommandLine(testScript);
         exec.setWorkingDirectory(workingDir);
+
         final int exitValue = exec.execute(cl);
+
+        assertEquals("FOO..", baos.toString().trim());
+        assertFalse(exec.isFailure(exitValue));
+        assertEquals(exec.getWorkingDirectory(), workingDir);
+    }
+
+    @Test
+    public void testExecuteWitExecutableFoundInWorkingDirectory() throws Exception {
+        final String scriptName = testScript.getName();
+        final File workingDir = new File("./src/test/scripts");
+        final CommandLine cl = new CommandLine(scriptName);
+        exec.setWorkingDirectory(workingDir);
+
+        final int exitValue = exec.execute(cl);
+
+        assertEquals("FOO..", baos.toString().trim());
+        assertFalse(exec.isFailure(exitValue));
+        assertEquals(exec.getWorkingDirectory(), workingDir);
+    }
+
+    @Test
+    public void testExecuteWitRelativeExecutableInWorkingDirectory() throws Exception {
+        final String scriptName = "./src/test/scripts/" + testScript.getName();
+        final File workingDir = new File(".");
+        final CommandLine cl = new CommandLine(scriptName);
+        exec.setWorkingDirectory(workingDir);
+
+        final int exitValue = exec.execute(cl);
+
         assertEquals("FOO..", baos.toString().trim());
         assertFalse(exec.isFailure(exitValue));
         assertEquals(exec.getWorkingDirectory(), workingDir);
@@ -335,7 +383,7 @@ public class DefaultExecutorTest {
     /**
      * [EXEC-68] Synchronously starts a short script with a Watchdog attached with an extremely large timeout. Checks
      * to see if the script terminated naturally or if it was killed by the Watchdog. Fail if killed by Watchdog.
-     * 
+     *
      * @throws Exception
      *             the test failed
      */
@@ -469,19 +517,19 @@ public class DefaultExecutorTest {
     @Test
     public void testExecuteWithProcessDestroyer() throws Exception {
 
-      final CommandLine cl = new CommandLine(testScript);
-      final ShutdownHookProcessDestroyer processDestroyer = new ShutdownHookProcessDestroyer();
-      exec.setProcessDestroyer(processDestroyer);
+        final CommandLine cl = new CommandLine(testScript);
+        final ShutdownHookProcessDestroyer processDestroyer = new ShutdownHookProcessDestroyer();
+        exec.setProcessDestroyer(processDestroyer);
 
-      assertTrue(processDestroyer.size() == 0);
-      assertTrue(processDestroyer.isAddedAsShutdownHook() == false);
+        assertTrue(processDestroyer.size() == 0);
+        assertTrue(processDestroyer.isAddedAsShutdownHook() == false);
 
-      final int exitValue = exec.execute(cl);
+        final int exitValue = exec.execute(cl);
 
-      assertEquals("FOO..", baos.toString().trim());
-      assertFalse(exec.isFailure(exitValue));
-      assertTrue(processDestroyer.size() == 0);
-      assertTrue(processDestroyer.isAddedAsShutdownHook() == false);
+        assertEquals("FOO..", baos.toString().trim());
+        assertFalse(exec.isFailure(exitValue));
+        assertTrue(processDestroyer.size() == 0);
+        assertTrue(processDestroyer.isAddedAsShutdownHook() == false);
     }
 
     /**
@@ -494,35 +542,35 @@ public class DefaultExecutorTest {
     @Test
     public void testExecuteAsyncWithProcessDestroyer() throws Exception {
 
-      final CommandLine cl = new CommandLine(foreverTestScript);
-      final DefaultExecuteResultHandler handler = new DefaultExecuteResultHandler();
-      final ShutdownHookProcessDestroyer processDestroyer = new ShutdownHookProcessDestroyer();
-      final ExecuteWatchdog watchdog = new ExecuteWatchdog(Integer.MAX_VALUE);
+        final CommandLine cl = new CommandLine(foreverTestScript);
+        final DefaultExecuteResultHandler handler = new DefaultExecuteResultHandler();
+        final ShutdownHookProcessDestroyer processDestroyer = new ShutdownHookProcessDestroyer();
+        final ExecuteWatchdog watchdog = new ExecuteWatchdog(Integer.MAX_VALUE);
 
-      assertTrue(exec.getProcessDestroyer() == null);
-      assertTrue(processDestroyer.size() == 0);
-      assertTrue(processDestroyer.isAddedAsShutdownHook() == false);
+        assertTrue(exec.getProcessDestroyer() == null);
+        assertTrue(processDestroyer.size() == 0);
+        assertTrue(processDestroyer.isAddedAsShutdownHook() == false);
 
-      exec.setWatchdog(watchdog);
-      exec.setProcessDestroyer(processDestroyer);
-      exec.execute(cl, handler);
+        exec.setWatchdog(watchdog);
+        exec.setProcessDestroyer(processDestroyer);
+        exec.execute(cl, handler);
 
-      // wait for script to start
-      Thread.sleep(2000);
+        // wait for script to start
+        Thread.sleep(2000);
 
-      // our process destroyer should be initialized now
-      assertNotNull("Process destroyer should exist", exec.getProcessDestroyer());
-      assertEquals("Process destroyer size should be 1", 1, processDestroyer.size());
-      assertTrue("Process destroyer should exist as shutdown hook", processDestroyer.isAddedAsShutdownHook());
+        // our process destroyer should be initialized now
+        assertNotNull("Process destroyer should exist", exec.getProcessDestroyer());
+        assertEquals("Process destroyer size should be 1", 1, processDestroyer.size());
+        assertTrue("Process destroyer should exist as shutdown hook", processDestroyer.isAddedAsShutdownHook());
 
-      // terminate it and the process destroyer is detached
-      watchdog.destroyProcess();
-      assertTrue(watchdog.killedProcess());
-      handler.waitFor(WAITFOR_TIMEOUT);
-      assertTrue("ResultHandler received a result", handler.hasResult());
-      assertNotNull(handler.getException());
-      assertEquals("Processor Destroyer size should be 0", 0, processDestroyer.size());
-      assertFalse("Process destroyer should not exist as shutdown hook", processDestroyer.isAddedAsShutdownHook());
+        // terminate it and the process destroyer is detached
+        watchdog.destroyProcess();
+        assertTrue(watchdog.killedProcess());
+        handler.waitFor(WAITFOR_TIMEOUT);
+        assertTrue("ResultHandler received a result", handler.hasResult());
+        assertNotNull(handler.getException());
+        assertEquals("Processor Destroyer size should be 0", 0, processDestroyer.size());
+        assertFalse("Process destroyer should not exist as shutdown hook", processDestroyer.isAddedAsShutdownHook());
     }
 
     /**
@@ -575,12 +623,12 @@ public class DefaultExecutorTest {
         }
     }
 
-     /**
-      * Start a process and connect stdout and stderr.
-      *
-      * @throws Exception the test failed
-      */
-     @Test
+    /**
+     * Start a process and connect stdout and stderr.
+     *
+     * @throws Exception the test failed
+     */
+    @Test
     public void testExecuteWithStdOutErr() throws Exception {
         final CommandLine cl = new CommandLine(testScript);
         final PumpStreamHandler pumpStreamHandler = new PumpStreamHandler(System.out, System.err);
@@ -592,7 +640,7 @@ public class DefaultExecutorTest {
 
     /**
      * Start a process and connect it to no stream.
-     * 
+     *
      * @throws Exception
      *             the test failed
      */
@@ -606,12 +654,12 @@ public class DefaultExecutorTest {
         assertFalse(exec.isFailure(exitValue));
     }
 
-     /**
-      * Start a process and connect out and err to a file.
-      *
-      * @throws Exception the test failed
-      */
-     @Test
+    /**
+     * Start a process and connect out and err to a file.
+     *
+     * @throws Exception the test failed
+     */
+    @Test
     public void testExecuteWithRedirectOutErr() throws Exception {
         final File outfile = File.createTempFile("EXEC", ".test");
         outfile.deleteOnExit();
@@ -643,7 +691,7 @@ public class DefaultExecutorTest {
         final DefaultExecutor executor = new DefaultExecutor();
         final int exitValue = executor.execute(cl);
         assertFalse(exec.isFailure(exitValue));
-     }
+    }
 
 
     /**
@@ -770,8 +818,8 @@ public class DefaultExecutorTest {
         while ((text = reader.readLine()) != null)
         {
             contents.append(text)
-                .append(System.getProperty(
-                    "line.separator"));
+                    .append(System.getProperty(
+                            "line.separator"));
         }
         reader.close();
         return contents.toString();

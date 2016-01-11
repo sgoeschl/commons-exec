@@ -27,6 +27,7 @@ import org.apache.commons.exec.OS;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class WinNTCommandLauncherTest {
 
@@ -63,7 +64,7 @@ public class WinNTCommandLauncherTest {
     }
 
     @Test
-    public void testRunInternalCommandWithWorkingDirectory() throws Exception {
+    public void testExecuteInternalCommandWithWorkingDirectory() throws Exception {
         if (OS.isFamilyWindows()) {
             final DefaultExecutor defaultExecutor = new DefaultExecutor();
             final CommandLine cmd = new CommandLine("dir");
@@ -76,7 +77,7 @@ public class WinNTCommandLauncherTest {
     }
 
     @Test
-    public void testStartingBatchFileWithoutWorkingDirectory() throws Exception {
+    public void testExecuteBatchFileWithoutWorkingDirectory() throws Exception {
         if (OS.isFamilyWindows()) {
             final DefaultExecutor defaultExecutor = new DefaultExecutor();
             final CommandLine cmd = new CommandLine("./src/test/scripts/test.bat");
@@ -89,7 +90,7 @@ public class WinNTCommandLauncherTest {
     }
 
     @Test
-    public void testStartingBatchFileWithWorkingDirectory() throws Exception {
+    public void testExecuteBatchFileWithWorkingDirectory() throws Exception {
         if (OS.isFamilyWindows()) {
             final DefaultExecutor defaultExecutor = new DefaultExecutor();
             final CommandLine cmd = new CommandLine("test.bat");
@@ -101,6 +102,20 @@ public class WinNTCommandLauncherTest {
             assertEquals(0, exitValue);
         }
     }
+
+    @Test
+    public void testExecuteNonExistingBatchFile() throws Exception {
+        if (OS.isFamilyWindows()) {
+            final DefaultExecutor defaultExecutor = new DefaultExecutor();
+            final CommandLine cmd = new CommandLine("./src/test/scripts/soes_not_exist.bat");
+            defaultExecutor.setLauncher(new WinNTCommandLauncher(new Java13CommandLauncher()));
+
+            int exitValue = defaultExecutor.execute(cmd);
+
+            assertTrue(exitValue != 0);
+        }
+    }
+
 
     private static final class CommandLauncherStub implements CommandLauncher {
 

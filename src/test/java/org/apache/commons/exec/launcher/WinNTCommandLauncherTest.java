@@ -63,6 +63,19 @@ public class WinNTCommandLauncherTest {
     }
 
     @Test
+    public void testRunInternalCommandWithWorkingDirectory() throws Exception {
+        if (OS.isFamilyWindows()) {
+            final DefaultExecutor defaultExecutor = new DefaultExecutor();
+            final CommandLine cmd = new CommandLine("dir");
+            defaultExecutor.setLauncher(new WinNTCommandLauncher(new Java13CommandLauncher()));
+
+            int exitValue = defaultExecutor.execute(cmd);
+
+            assertEquals(0, exitValue);
+        }
+    }
+
+    @Test
     public void testStartingBatchFileWithoutWorkingDirectory() throws Exception {
         if (OS.isFamilyWindows()) {
             final DefaultExecutor defaultExecutor = new DefaultExecutor();

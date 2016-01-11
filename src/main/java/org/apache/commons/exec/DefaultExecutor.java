@@ -60,7 +60,7 @@ public class DefaultExecutor implements Executor {
     private int[] exitValues;
 
     /** launches the command in a new process */
-    private CommandLauncher launcher;
+    private CommandLauncher commandLauncher;
 
     /** optional cleanup of started processes */ 
     private ProcessDestroyer processDestroyer;
@@ -83,7 +83,7 @@ public class DefaultExecutor implements Executor {
      */
     public DefaultExecutor() {
         this.streamHandler = new PumpStreamHandler();
-        this.launcher = CommandLauncherFactory.createVMLauncher();
+        this.commandLauncher = CommandLauncherFactory.createVMLauncher();
         this.exitValues = new int[0];
         this.workingDirectory = new File(".");
         this.exceptionCaught = null;
@@ -143,14 +143,6 @@ public class DefaultExecutor implements Executor {
      */
     public void setWorkingDirectory(final File dir) {
         this.workingDirectory = dir;
-    }
-
-    public CommandLauncher getLauncher() {
-        return launcher;
-    }
-
-    public void setLauncher(CommandLauncher launcher) {
-        this.launcher = launcher;
     }
 
     /**
@@ -237,7 +229,7 @@ public class DefaultExecutor implements Executor {
             return false;
         }
         else if (this.exitValues.length == 0) {
-            return this.launcher.isFailure(exitValue);
+            return this.commandLauncher.isFailure(exitValue);
         }
         else {
             for (final int exitValue2 : this.exitValues) {
@@ -247,6 +239,15 @@ public class DefaultExecutor implements Executor {
             }
         }
         return true;
+    }
+
+    public void setCommandLauncher(CommandLauncher commandLauncher) {
+
+        if (this.commandLauncher == null) {
+            throw new IllegalArgumentException("CommandLauncher can not be null");
+        }
+
+        this.commandLauncher = commandLauncher;
     }
 
     /**
@@ -277,14 +278,14 @@ public class DefaultExecutor implements Executor {
     protected Process launch(final CommandLine command, final Map<String, String> env,
             final File dir) throws IOException {
 
-        if (this.launcher == null) {
+        if (this.commandLauncher == null) {
             throw new IllegalStateException("CommandLauncher can not be null");
         }
 
         if (dir != null && !dir.exists()) {
             throw new IOException(dir + " doesn't exist.");
         }
-        return this.launcher.exec(command, env, dir);
+        return this.commandLauncher.exec(command, env, dir);
     }
 
     /**

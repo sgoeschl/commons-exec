@@ -25,10 +25,8 @@ import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.OS;
+import org.junit.Assert;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class WinNTCommandLauncherTest {
 
@@ -44,8 +42,8 @@ public class WinNTCommandLauncherTest {
 
         winNTCommandLauncher.exec(cmd, null, null);
 
-        assertEquals(1, commandLauncher.cmd.toStrings().length);
-        assertEquals(ANY_EXECUTABLE_NAME, commandLauncher.cmd.getExecutable());
+        Assert.assertEquals(1, commandLauncher.cmd.toStrings().length);
+        Assert.assertEquals(ANY_EXECUTABLE_NAME, commandLauncher.cmd.getExecutable());
     }
 
     @Test
@@ -54,14 +52,14 @@ public class WinNTCommandLauncherTest {
 
         winNTCommandLauncher.exec(cmd, null, ANY_WORKING_DIR);
 
-        assertEquals(7, commandLauncher.cmd.toStrings().length);
-        assertEquals("cmd", commandLauncher.cmd.getExecutable());
-        assertEquals("/c", commandLauncher.cmd.getArguments()[0]);
-        assertEquals("cd", commandLauncher.cmd.getArguments()[1]);
-        assertEquals("/d", commandLauncher.cmd.getArguments()[2]);
-        assertEquals(ANY_WORKING_DIR.getAbsolutePath(), commandLauncher.cmd.getArguments()[3]);
-        assertEquals("&&", commandLauncher.cmd.getArguments()[4]);
-        assertEquals(ANY_EXECUTABLE_NAME, commandLauncher.cmd.getArguments()[5]);
+        Assert.assertEquals(7, commandLauncher.cmd.toStrings().length);
+        Assert.assertEquals("cmd", commandLauncher.cmd.getExecutable());
+        Assert.assertEquals("/c", commandLauncher.cmd.getArguments()[0]);
+        Assert.assertEquals("cd", commandLauncher.cmd.getArguments()[1]);
+        Assert.assertEquals("/d", commandLauncher.cmd.getArguments()[2]);
+        Assert.assertEquals(ANY_WORKING_DIR.getAbsolutePath(), commandLauncher.cmd.getArguments()[3]);
+        Assert.assertEquals("&&", commandLauncher.cmd.getArguments()[4]);
+        Assert.assertEquals(ANY_EXECUTABLE_NAME, commandLauncher.cmd.getArguments()[5]);
     }
 
     @Test
@@ -69,11 +67,11 @@ public class WinNTCommandLauncherTest {
         if (OS.isFamilyWindows()) {
             final DefaultExecutor defaultExecutor = new DefaultExecutor();
             final CommandLine cmd = new CommandLine("dir");
-            defaultExecutor.setLauncher(new WinNTCommandLauncher(new Java13CommandLauncher()));
+            defaultExecutor.setCommandLauncher(new WinNTCommandLauncher(new Java13CommandLauncher()));
 
             int exitValue = defaultExecutor.execute(cmd);
 
-            assertEquals(0, exitValue);
+            Assert.assertEquals(0, exitValue);
         }
     }
 
@@ -82,11 +80,11 @@ public class WinNTCommandLauncherTest {
         if (OS.isFamilyWindows()) {
             final DefaultExecutor defaultExecutor = new DefaultExecutor();
             final CommandLine cmd = new CommandLine("./src/test/scripts/test.bat");
-            defaultExecutor.setLauncher(new WinNTCommandLauncher(new Java13CommandLauncher()));
+            defaultExecutor.setCommandLauncher(new WinNTCommandLauncher(new Java13CommandLauncher()));
 
             int exitValue = defaultExecutor.execute(cmd);
 
-            assertEquals(0, exitValue);
+            Assert.assertEquals(0, exitValue);
         }
     }
 
@@ -96,24 +94,30 @@ public class WinNTCommandLauncherTest {
             final DefaultExecutor defaultExecutor = new DefaultExecutor();
             final CommandLine cmd = new CommandLine("test.bat");
             defaultExecutor.setWorkingDirectory(new File("./src/test/scripts"));
-            defaultExecutor.setLauncher(new WinNTCommandLauncher(new Java13CommandLauncher()));
+            defaultExecutor.setCommandLauncher(new WinNTCommandLauncher(new Java13CommandLauncher()));
 
             int exitValue = defaultExecutor.execute(cmd);
 
-            assertEquals(0, exitValue);
+            Assert.assertEquals(0, exitValue);
         }
     }
 
-    @Test(expected = ExecuteException.class)
+    @Test
     public void testExecuteNonExistingBatchFile() throws Exception {
         if (OS.isFamilyWindows()) {
-            final DefaultExecutor defaultExecutor = new DefaultExecutor();
-            final CommandLine cmd = new CommandLine("./src/test/scripts/does_not_exist.bat");
-            defaultExecutor.setLauncher(new WinNTCommandLauncher(new Java13CommandLauncher()));
+            try {
+                final DefaultExecutor defaultExecutor = new DefaultExecutor();
+                final CommandLine cmd = new CommandLine("./src/test/scripts/does_not_exist.bat");
+                defaultExecutor.setCommandLauncher(new WinNTCommandLauncher(new Java13CommandLauncher()));
 
-            int exitValue = defaultExecutor.execute(cmd);
+                int exitValue = defaultExecutor.execute(cmd);
 
-            assertTrue(exitValue != 0);
+                Assert.assertTrue(exitValue != 0);
+            }
+            catch(ExecuteException e) {
+                return;
+            }
+            Assert.fail("Expecting an ExecuteException ");
         }
     }
 

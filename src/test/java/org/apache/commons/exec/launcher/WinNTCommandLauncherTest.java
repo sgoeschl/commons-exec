@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.OS;
 import org.junit.Test;
 
@@ -103,11 +104,11 @@ public class WinNTCommandLauncherTest {
         }
     }
 
-    @Test
+    @Test(expected = ExecuteException.class)
     public void testExecuteNonExistingBatchFile() throws Exception {
         if (OS.isFamilyWindows()) {
             final DefaultExecutor defaultExecutor = new DefaultExecutor();
-            final CommandLine cmd = new CommandLine("./src/test/scripts/soes_not_exist.bat");
+            final CommandLine cmd = new CommandLine("./src/test/scripts/does_not_exist.bat");
             defaultExecutor.setLauncher(new WinNTCommandLauncher(new Java13CommandLauncher()));
 
             int exitValue = defaultExecutor.execute(cmd);
@@ -115,7 +116,6 @@ public class WinNTCommandLauncherTest {
             assertTrue(exitValue != 0);
         }
     }
-
 
     private static final class CommandLauncherStub implements CommandLauncher {
 

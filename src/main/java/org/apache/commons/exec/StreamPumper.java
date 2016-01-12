@@ -18,11 +18,10 @@
 
 package org.apache.commons.exec;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.apache.commons.exec.util.DebugUtils;
+import org.apache.commons.exec.util.IOUtils;
 
 /**
  * Copies all data from an input stream to an output stream.
@@ -48,10 +47,10 @@ public class StreamPumper implements Runnable {
 
     /** close the output stream when exhausted */
     private final boolean closeWhenExhausted;
-    
+
     /**
      * Create a new stream pumper.
-     * 
+     *
      * @param is input stream to read data from
      * @param os output stream to write data to.
      * @param closeWhenExhausted if true, the output stream will be closed when the input is exhausted.
@@ -102,21 +101,13 @@ public class StreamPumper implements Runnable {
 
         final byte[] buf = new byte[this.size];
 
-        int length;
         try {
-            while ((length = is.read(buf)) > 0) {
-                os.write(buf, 0, length);
-            }
+            IOUtils.copyNonBlocking(is, os, buf);
         } catch (final Exception e) {
             // nothing to do - happens quite often with watchdog
         } finally {
             if (closeWhenExhausted) {
-                try {
-                    os.close();
-                } catch (final IOException e) {
-                    final String msg = "Got exception while closing exhausted output stream";
-                    DebugUtils.handleException(msg ,e);
-                }
+                IOUtils.closeQuietly(os);
             }
             synchronized (this) {
                 finished = true;

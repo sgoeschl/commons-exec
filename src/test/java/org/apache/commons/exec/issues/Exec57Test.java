@@ -18,15 +18,14 @@
 package org.apache.commons.exec.issues;
 
 
+import java.io.IOException;
+
 import org.apache.commons.exec.AbstractExecTest;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.OS;
 import org.apache.commons.exec.PumpStreamHandler;
-import org.junit.Ignore;
 import org.junit.Test;
-
-import java.io.IOException;
 
 /**
  * Test EXEC-57 (https://issues.apache.org/jira/browse/EXEC-57).
@@ -42,10 +41,7 @@ public class Exec57Test extends AbstractExecTest {
      * to ensure that the caller does not block forever but if the stop timeout is exceeded
      * an ExecuteException is thrown to notify the caller. But this case the threads are still
      * around causing a resource leak.
-     *
-     * @TODO [EXEC-57] Broken for Mac OS X & Linux
      */
-    @Ignore("Broken for Unix-based systems")
     @Test(timeout = TEST_TIMEOUT)
     public void testExecutionOfBackgroundProcess() throws IOException {
 

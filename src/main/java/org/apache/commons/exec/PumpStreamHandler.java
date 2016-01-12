@@ -18,12 +18,12 @@
 
 package org.apache.commons.exec;
 
-import org.apache.commons.exec.util.DebugUtils;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PipedOutputStream;
+
+import org.apache.commons.exec.util.DebugUtils;
 
 /**
  * Copies standard output and error of sub-processes to standard output and error
@@ -285,6 +285,7 @@ public class PumpStreamHandler implements ExecuteStreamHandler {
         if (thread != null) {
             try {
                 if (timeout == 0) {
+                    thread.interrupt();
                     thread.join();
                 } else {
                     final long timeToWait = timeout + STOP_TIMEOUT_ADDITION;

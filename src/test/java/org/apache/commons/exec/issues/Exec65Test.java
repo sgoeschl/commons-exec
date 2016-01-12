@@ -58,13 +58,11 @@ public class Exec65Test extends AbstractExecTest {
      * <li>Linux hangs on the process stream while the process is finished</li>
      * <li>Windows seems to have similar problems</li>
      * </ul>
-     *
-     * @TODO Fix tests for Windows & Linux
      */
     @Test(expected = ExecuteException.class, timeout = TEST_TIMEOUT)
     public void testExec65WithSleepUsingShellScript() throws Exception {
 
-        if (OS.isFamilyMac()) {
+        if (OS.isFamilyUnix()) {
             final DefaultExecutor executor = new DefaultExecutor();
             executor.setStreamHandler(new PumpStreamHandler(System.out, System.err));
             executor.setWatchdog(new ExecuteWatchdog(WATCHDOG_TIMEOUT));

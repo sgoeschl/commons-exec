@@ -17,15 +17,19 @@
 
 package org.apache.commons.exec.issues;
 
-import org.apache.commons.exec.*;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.concurrent.TimeoutException;
+
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.ExecuteWatchdog;
+import org.apache.commons.exec.OS;
+import org.apache.commons.exec.PumpStreamHandler;
+import org.apache.commons.exec.TestUtil;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @see <a href="https://issues.apache.org/jira/browse/EXEC-62">EXEC-62</a>
@@ -44,7 +48,6 @@ public class Exec62Test
         outputFile.delete();
     }
 
-    @Ignore("Test behaves differently between Mac OS X and Linux - don't know why")
     @Test (expected = TimeoutException.class, timeout = 10000)
     public void testMe() throws Exception {
         if(OS.isFamilyUnix()) {
@@ -69,6 +72,7 @@ public class Exec62Test
         executor.execute(commandLine);
 
         if (watchdog.killedProcess()) {
+            System.out.println(outputFile.length());
             throw new TimeoutException(String.format("Transcode process was killed on timeout %1$s ms, command line %2$s", 4000, commandLine.toString()));
         }
     }

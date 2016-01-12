@@ -18,14 +18,30 @@
 
 package org.apache.commons.exec;
 
-import org.apache.commons.exec.environment.EnvironmentUtils;
-import org.junit.*;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import org.apache.commons.exec.environment.EnvironmentUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @version $Id$
@@ -548,7 +564,7 @@ public class DefaultExecutorTest {
      *
      * @throws Exception the test failed
      */
-    @Test
+    @Test(timeout = 1000)
     public void testExecuteWithRedirectedStreams() throws Exception {
         if (OS.isFamilyUnix()) {
             final FileInputStream fis = new FileInputStream("./NOTICE.txt");
@@ -653,18 +669,18 @@ public class DefaultExecutorTest {
      *
      * @throws Exception the test failed
      */
-    @Test
+    @Test(timeout = 1000)
     public void testStdInHandling() throws Exception {
         // newline not needed; causes problems for VMS
-        final ByteArrayInputStream bais = new ByteArrayInputStream("Foo".getBytes());
+        final ByteArrayInputStream bais = new ByteArrayInputStream("Foo\n".getBytes());
         final CommandLine cl = new CommandLine(this.stdinSript);
-        final PumpStreamHandler pumpStreamHandler = new PumpStreamHandler(this.baos, System.err, bais);
+        final PumpStreamHandler pumpStreamHandler = new PumpStreamHandler(baos, System.err, bais);
         final DefaultExecuteResultHandler resultHandler = new DefaultExecuteResultHandler();
         final Executor executor = new DefaultExecutor();
         executor.setStreamHandler(pumpStreamHandler);
         executor.execute(cl, resultHandler);
 
-        resultHandler.waitFor(WAITFOR_TIMEOUT);
+        resultHandler.waitFor();
         assertTrue("ResultHandler received a result", resultHandler.hasResult());
 
         assertFalse(exec.isFailure(resultHandler.getExitValue()));
